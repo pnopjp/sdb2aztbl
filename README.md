@@ -1,54 +1,59 @@
-# sdb2aztbl - Data converter to Windows Azure Table from Amazon Web Services SimpleDB #
-Amazon SimpleDBからWindows Azure Table storageへデーターを移行する為のソフトウェアです。
-CLIで操作します。
+# sdb2aztbl - Data converter to Windows Azure Table from Amazon Web Services SimpleDB
 
-## License##
+The sdb2aztbl is data migration commandline tool to Windows Azure Table storage from Amazon SimpleDB!
+
+## License
 
 Apache License Version 2.0
 
-## Supported Environments　##
+## Supported Environments
 
-### OS ###
+### Targeted platforms
 - Amazon Linux
 - CentOS
 - Ubuntu Linux
-- Windows XP 以降
+- Windows XP or later
 - Mac OS X
 
-### 必要なソフトウェア ###
-- node.js v0.8以降
+### Required software
+- node.js v0.8 or later.
 
-## USAGE ##
+## Usage
 
-    node sdb2aztbl.js --config settings.json [ --tables table1,table2...] [--awsKey aws_access_key] [--awsSecret aws_secret_key]
+    node sdb2aztbl.js --config settings.json [--tables table1,table2...] [--awsKey aws_access_key] [--awsSecret aws_secret_key]
     [--sdbHostName sdb.ap-northeast-1.amazonaws.com] [--azureAccount azure_account]
     [--azureSecret azure_secret] [--partitionKey azure_storage_partition_key_template] 
     [--rowKey azure_storage_partition_key_template] 
 
-### 引数 ###
-    config 設定ファイル
-    tables 移行するドメイン名（テーブル名）カンマ区切りで複数指定可能
-    awsKey AWSのキー
-    awsSecret AWSシークレットキー
-    sdbHostName 移行元のAmazon SimpleDBのリージョンエンドポイント デフォルトは東京リージョン
-    azureAccount Windows Azure Storage アカウント名
-    azureSecret Windows Azure Storage シークレットキー
-    partitionKey "%Attribute1%-%Attribute2%"
-    rowKey "%Attribute1%-%Attribute2%"
+### Arguments
 
-PartitionKey、RowKeyの値文字列のフォーマットが可能です、後述のPartitionKeyとRowKeyについてを確認してください。
+| Arg            | Description                                                                           | Example                       |
+|:---------------|:--------------------------------------------------------------------------------------|:------------------------------|
+| **config**     | Configration file of sdb2aztbl.                                                       |                               |
+| *sdbHostName*  | Migration source AWS SimpleDB's  region endpoint. The default value are Tokyo region. | `sdb.ap-northeast-1.amazonaws.com` |
+| *awsKey*       | Key of AWS                                                                            |                               |
+| *awsSecret*    | Sercret key of AWS                                                                    |                               |
+| *tables*       | Migration source domain name (or table name) to be migrated, comma delimited.    |                               |
+| *azureAccount* | Migration destination Windows Azure Table storage account name.                       |                               |
+| *azureSecret*  | Migration destination Windows Azure Table storage account sercret key.                |                               |
+| *partitionKey* | Format string of the Windows Azure Table's partition key.                             | `"%Attribute1%-%Attribute2%"` |
+| *rowKey*       | Format string of the Windows Azure Table's row key.                                   | `"%Attribute1%-%Attribute2%"` |
 
-## 設定ファイル ##
-引数に指定する他にsetting.jsonに指定する事も可能です。引数が指定されている場合は、引数の値が優先されます。
+You can formatting value of `partitionKey` and `rowKey`. See also "About partionKey and rowKey" section.
+
+
+## Configration file
+
+The sdb2aztbl can configured other details from `setting.json`. If you configured arguments and settings.json both, an arguments is preferred priority over settings.json.
 
     {
-        "awsKey": "AWSのキー",
-        "awsSecret": "AWSシークレットキー",
-        "sdbHostName": "移行元のAmazon SimpleDBのリージョンエンドポイント デフォルトはsdb.ap-northeast-1.amazonaws.com",
-        "azureAccount": "Windows Azure Storage アカウント名",
-        "azureSecret": "Windows Azure Storage シークレットキー",
+        "awsKey": "<Your Key of AWS>",
+        "awsSecret": "<Your Secret key of AWS>",
+        "sdbHostName": "sdb.ap-northeast-1.amazonaws.com",
+        "azureAccount": "<Your Windows Azure Table storage account name>",
+        "azureSecret": "<Your Windows Azure Table storage account secret key>",
         "tables": {
-              "移行元のAmazon SimpleDBのドメイン名": {
+              "Amazon SimpleDB's domain name or table name": {
               "replace": {
                   "PartitionKey": "%Attribute1%-%Attribute2%",
                   "RowKey": "%Attribute1%-%Attribute2%"
@@ -67,38 +72,35 @@ PartitionKey、RowKeyの値文字列のフォーマットが可能です、後�
         }
     }
 
-## PartitionKeyとRowKeyについて ##
+### About `partitionKey` and `rowKey`
 
-PartitionKeyとRowKeyは任意のフォーマットを指定可能です。SimpleDBのアトリビュート名や特殊識別子を%で囲んで指定します。
+You can formatting value of `partitionKey` and `rowKey`. 
 
-    "partitionKey": "固定の任意の値"
+    "partitionKey": "Any value of the fixed"
 
-そのまま任意の値を出力します
+You will output the value of any directly. In the following example, The `partitionKey` combined FirstName and LastName attribute of SimpleDB.
 
     "partitionKey": "%FirstName% %LastName%"
 
-SimpleDBのAttribute FirstNameとLastNameをスペースで結合して出力します。
+### Special identifier
 
-### 特殊識別子について ###
+| Identifier    | Value                             |
+|:--------------|:----------------------------------|
+| "%$ItemName%" | `ItemName()` row of AWS SimpleDB. |
+| "%$Identity%" | Sequence number of zero origin.   |
+| "%$Guid%"     | Generate new GUID.                |
 
-    "%$ItemName%" AWS SimpleDB のItemName()列を出力します
-    "%$Identity%" 連番 0開始で1行づつインクリメントします
-    "%$Guid%" GUID値を生成します
-
-これらの機能を複数組み合わせて使う事も可能です。
+It is also possible to use a combination of several of these features.
     
     "Azure_%Guid%_%FirstName%_%Identity%"
 
-### 例 ###
-
-SimpleDBのAttribute FirstNameの値が**PNOP**であった場合、以下のようなPartitionKeyが生成されます。
+If the value of the Attribute FirstName of SimpleDB was ** PNOP **, PartitionKey similar to the following is generated.
 
     "Azure_ACBB16CA-E78D-3B13-041-3CD2-8CC57221_PNOP_0"
 
-## typeについて ##
+### About `type` key
 
-インポートする際に、明示的に型を指定する事ができます。指定が無い場合はEdm.Stringであるとしてインポートします。
-型はWindows Azureで指定可能な以下の型のいずれかを指定します。なお、PartitionKeyとRowKeyはEdm.Stringの指定が必須の為、指定する必要はありません。
+When you import, you can specify the type explicitly. The sdb2aztbl will import as a Edm.String If not specified. The type can be one of the following types that can be specified in the Windows Azure. 
 
 - Edm.String
 - Edm.Int32
@@ -108,14 +110,12 @@ SimpleDBのAttribute FirstNameの値が**PNOP**であった場合、以下のよ
 - Edm.Guid
 - Edm.DateTime
 
-## テーブル定義について ##
-設定ファイルには、移行先の移行元のAmazon SimpleDBのドメイン名を指定した、以下のフォーマットの定義が必要です。Edmで始まる型を指定する事でインポート時に型を付与する事ができます。
+Notes: You do not designate type a `partitionKey` and `rowKey`.
 
-テーブル定義が存在する場合、引数のtablesは指定の必要がありません、テーブル定義からテーブル名を取得します。
-また、定義が存在する場合に引数tablesが指定された場合は、引数tablesで指定したテーブルを移行対象とし、移行の情報はテーブル定義を参照します。その際、定義が存在しない場合はEdm.Stringであるものとして移行します。
+### tables define
 
         "tables": {
-              "移行元のAmazon SimpleDBのドメイン名": {
+              "Migration source Amazon SimpleDB's domain name": {
               "replace": {
                   "PartitionKey": "%Attribute1%-%Attribute2%",
                   "RowKey": "%Attribute1%-%Attribute2%"
@@ -135,18 +135,16 @@ SimpleDBのAttribute FirstNameの値が**PNOP**であった場合、以下のよ
              }
         }
 
-## エラー時 ##
-エラー出力にエラーの内容を出力します。また、インポート時に使えない文字列や最大入力から溢れた場合や例外発生時は、その場でエラーとして停止します。
+## Errors
+The sdb2aztbl's error detail output to standard error output. And sdb2aztbl stop immediately when caught the exception. (ex: string cannot be used for import) 
 
-## Windows / Max OS Xのnode.jsインストール##
+## How to install node.js on Windows / Max OS X
 
-[http://nodejs.org/download/
-](http://nodejs.org/download/)
+You can get the installer from [http://nodejs.org/download/](http://nodejs.org/download/). node.js install according to the installation wizard after download.
 
-より、各プラットフォーム向けにインストーラーをダウンロード後、ウィザードに従いインストールを行ってください。
 
-## Linux環境でのnode.jsインストール ##
-naveを使い、ビルド済みのバイナリをユーザー環境に構築できます。
+## How to install node.js on Linux
+You can using [https://github.com/isaacs/nave](https://github.com/isaacs/nave "nave"). The node.js distribute built binary to user environment after install.
 
     wget https://github.com/isaacs/nave/raw/master/nave.sh
     bash nave.sh install stable

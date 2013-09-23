@@ -20,23 +20,28 @@ Apache License Version 2.0
 
 ## USAGE ##
 
-    node sdb2aztbl.js --config settings.json [ --tables table1,table2...] [--awsKey aws_access_key] [--awsSecret aws_secret_key]
-    [--sdbHostName sdb.ap-northeast-1.amazonaws.com] [--azureAccount azure_account]
+    node sdb2aztbl.js [-s] --config settings.json [ --tables table1,table2...] [--awsKey aws_access_key] [--awsSecret aws_secret_key]
+    [--sdbHostName us-east-1] [--azureAccount azure_account]
     [--azureSecret azure_secret] [--partitionKey azure_storage_partition_key_template] 
     [--rowKey azure_storage_partition_key_template] 
 
 ### 引数 ###
-    config 設定ファイル
-    tables 移行するドメイン名（テーブル名）カンマ区切りで複数指定可能
-    awsKey AWSのキー
-    awsSecret AWSシークレットキー
-    sdbHostName 移行元のAmazon SimpleDBのリージョンエンドポイント デフォルトは東京リージョン
-    azureAccount Windows Azure Storage アカウント名
-    azureSecret Windows Azure Storage シークレットキー
-    partitionKey "%Attribute1%-%Attribute2%"
-    rowKey "%Attribute1%-%Attribute2%"
 
-PartitionKey、RowKeyの値文字列のフォーマットが可能です、後述のPartitionKeyとRowKeyについてを確認してください。
+
+| Arg            | Description                                                                           | Example                       |
+|:---------------|:--------------------------------------------------------------------------------------|:------------------------------|
+| *s*     | インポート時にエラーがある場合、エラーのレコードを表示し、その後インポートを継続します。                                                      |                               |
+| **config**     | sdb2aztblの設定ファイル                                                       | `settings.json`                              |
+| *sdbHostName*  | 移行元のAmazon SimpleDBのリージョンエンドポイント、デフォルトはUS Eastリージョン | `sdb.us-east-1.amazonaws.com` |
+| *awsKey*       | AWSのキー                                                                            |                               |
+| *awsSecret*    | AWSシークレットキー                                                                    |                               |
+| *tables*       | 移行するドメイン名（テーブル名）カンマ区切りで複数指定可能    | `table1,table2`                              |
+| *azureAccount* | Windows Azure Storage アカウント名.                       |                               |
+| *azureSecret*  |  Windows Azure Storage シークレットキー                |                               |
+| *partitionKey* | Windows Azure TableのPartition keyフォーマット文字列                             | `"%Attribute1%-%Attribute2%"` |
+| *rowKey*       | Windows Azure TableのRow keyフォーマット文字列.                                   | `"%Attribute1%-%Attribute2%"` |
+
+`PartitionKey`と`RowKey`は、値のフォーマットが可能です。詳しくはPartitionKeyとRowKeyについてを確認してください。
 
 ## 設定ファイル ##
 引数に指定する他にsetting.jsonに指定する事も可能です。引数が指定されている場合は、引数の値が優先されます。
@@ -44,15 +49,20 @@ PartitionKey、RowKeyの値文字列のフォーマットが可能です、後�
     {
         "awsKey": "AWSのキー",
         "awsSecret": "AWSシークレットキー",
-        "sdbHostName": "移行元のAmazon SimpleDBのリージョンエンドポイント デフォルトはsdb.ap-northeast-1.amazonaws.com",
+        "sdbHostName": "移行元のAmazon SimpleDBのリージョンエンドポイント デフォルトはus-east-1",
         "azureAccount": "Windows Azure Storage アカウント名",
         "azureSecret": "Windows Azure Storage シークレットキー",
         "tables": {
-              "移行元のAmazon SimpleDBのドメイン名": {
-              "replace": {
-                  "PartitionKey": "%Attribute1%-%Attribute2%",
-                  "RowKey": "%Attribute1%-%Attribute2%"
-              },
+              "Amazon SimpleDB's domain name or table name": {
+			"replace" : {
+				"PartitionKey" : {
+					"Value" : "%$Identity%",
+					"Padding" : "10"
+				},
+				"RowKey" : {
+					"Value" : "%$Identity%",
+				}
+			},
              "type": {
                   "StringAttribute":"Edm.String",
                   "IntAttribute": "Edm.Int32",
@@ -81,9 +91,11 @@ SimpleDBのAttribute FirstNameとLastNameをスペースで結合して出力し
 
 ### 特殊識別子について ###
 
-    "%$ItemName%" AWS SimpleDB のItemName()列を出力します
-    "%$Identity%" 連番 0開始で1行づつインクリメントします
-    "%$Guid%" GUID値を生成します
+| Identifier    | Value                             |
+|:--------------|:----------------------------------|
+| "%$ItemName%" | AWS SimpleDB の`ItemName()`列を出力します. |
+| "%$Identity%" | 連番 0開始で1行づつインクリメントします   |
+| "%$Guid%"     | GUID値を生成します               |
 
 これらの機能を複数組み合わせて使う事も可能です。
     
@@ -94,6 +106,20 @@ SimpleDBのAttribute FirstNameとLastNameをスペースで結合して出力し
 SimpleDBのAttribute FirstNameの値が**PNOP**であった場合、以下のようなPartitionKeyが生成されます。
 
     "Azure_ACBB16CA-E78D-3B13-041-3CD2-8CC57221_PNOP_0"
+
+### `partitionKey`と`rowKey`のゼロ埋めについて
+
+`PartitionKey`と`RowKey`がの場合、指定した桁数でゼロ埋めが可能です。
+
+            "PartitionKey" : {
+                "Value" : "%$Identity%",
+                "Padding" : "10"
+            },
+
+
+`PartitionKey`の値が1で、`Padding`の値が10の場合は以下の文字列を出力します。
+
+    "0000000001"
 
 ## typeについて ##
 
@@ -136,7 +162,7 @@ SimpleDBのAttribute FirstNameの値が**PNOP**であった場合、以下のよ
         }
 
 ## エラー時 ##
-エラー出力にエラーの内容を出力します。また、インポート時に使えない文字列や最大入力から溢れた場合や例外発生時は、その場でエラーとして停止します。
+エラー出力にエラーの内容を出力します。また、インポート時に使えない文字列や最大入力から溢れた場合や例外発生時は、その場でエラーとして停止します。`[ -s ]`が引数に指定されている場合は、エラーを出力後、処理を継続します。
 
 ## Windows / Max OS Xのnode.jsインストール##
 

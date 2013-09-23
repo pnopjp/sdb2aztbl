@@ -1,48 +1,77 @@
 {
-    "awsKey": "AWS Key",
-    "awsSecret": "AWS Secret Key",
-    "sdbHostName": "sdb.ap-northeast-1.amazonaws.com",
-    "azureAccount": "Windows Azure Storage Account",
-    "azureSecret": "Windows Azure Storage Secret",
-    "tables": {
-        "typetestdata": {
-            "replace": {
-                "PartitionKey": "%$ItemName%_%$Guid%",
-                "RowKey": "%$Identity%"
-            },
-            "type": {
-                "PartitionKey": "Edm.String",
-                "RowKey": "Edm.String",
-                "StringTest": "Edm.String",
-                "IntTest": "Edm.Int32",
-                "Int64Test": "Edm.Int64",
-                "DoubleTest": "Edm.Double",
-                "BoolTest": "Edm.Boolean",
-                "GUIDTest": "Edm.Guid",
-                "DateTimeTest": "Edm.DateTime"
-            },
-            "where": "`BoolTest` = '1'"
-        },
-        "sampledata": {
-            "replace": {
-                "PartitionKey": "%$ItemName%_%$Guid%",
-                "RowKey": "%$Identity%"
-            },
-            "type": {
-                "PartitionKey": "Edm.String",
-                "RowKey": "Edm.String",
-                "guid": "Edm.String",
-                "region": "Edm.String",
-                "phone": "Edm.String",
-                "birth": "Edm.String",
-                "postal": "Edm.String",
-                "email": "Edm.String",
-                "company": "Edm.String",
-                "name": "Edm.String",
-                "random": "Edm.String",
-                "gps": "Edm.String",
-                "number": "Edm.String"
-            }
-        }
-    }
+	"awsKey": "AWS Key",
+	"awsSecret": "AWS Secret Key",
+	"sdbHostName": "us-east-1",
+	"azureAccount": "Windows Azure Storage Account",
+	"azureSecret": "Windows Azure Storage Secret",
+	"tables" : {
+		"typetestdata" : {
+			"replace" : {
+				"PartitionKey" : {
+					"Value" : "%$Identity%",
+					"Padding" : "3"
+				},
+				"RowKey" : {
+					"Value" : "%$Identity%",
+					"Padding" : "5"
+				}
+			},
+			"type" : {
+				"PartitionKey" : "Edm.String",
+				"RowKey" : "Edm.String",
+				"StringTest" : "Edm.String",
+				"IntTest" : "Edm.Int32",
+				"Int64Test" : "Edm.Int64",
+				"DoubleTest" : "Edm.Double",
+				"BoolTest" : "Edm.Boolean",
+				"GUIDTest" : "Edm.Guid",
+				"DateTimeTest" : "Edm.DateTime"
+			},
+			"where" : "`BoolTest` = '1'"
+		},
+		"sampledata" : {
+			"replace" : {
+				"PartitionKey" : {
+					"Value" : "%$Identity%",
+					"Padding" : "4"
+				},
+				"RowKey" : {
+					"Value" : "%$Identity%",
+					"Padding" : "6"
+				}
+			},
+			"type" : {
+				"PartitionKey" : "Edm.String",
+				"RowKey" : "Edm.String",
+				"guid" : "Edm.String",
+				"region" : "Edm.String",
+				"phone" : "Edm.String",
+				"birth" : "Edm.String",
+				"postal" : "Edm.String",
+				"email" : "Edm.String",
+				"company" : "Edm.String",
+				"name" : "Edm.String",
+				"random" : "Edm.String",
+				"gps" : "Edm.String",
+				"number" : "Edm.String"
+			}
+		},
+		"emptytest" : {
+			"replace" : {
+				"PartitionKey" : {
+					"Value" : "%$Identity%",
+					"Padding" : "4"
+				},
+				"RowKey" : {
+					"Value" : "%$Identity%",
+					"Padding" : "6"
+				}
+			},
+			"type" : {
+				"PartitionKey" : "Edm.String",
+				"RowKey" : "Edm.String",
+				"test" : "Edm.String"
+			}
+		}
+	}
 }

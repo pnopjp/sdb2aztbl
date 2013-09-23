@@ -3,15 +3,6 @@
   "version": "1.0.0",
   "description": "pnop Amazon Simple DB to Azure Storage Table Converter.",
   "main": "sdb2aztbl.js",
-  "dependencies": {
-    "aws-lib": "0.0.6",
-    "azure": "~0.7.10",
-    "optimist": "~0.2.8",
-    "sax": "~0.1.5",
-    "simpledb": "0.0.9",
-    "xml2js": "~0.1.14",
-    "async": "~0.2.9"
-  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -19,5 +10,13 @@
   "repository": "",
   "author": "",
   "license": "Apache License 2.0",
-  "readmeFilename": "README"
+  "readmeFilename": "README",
+  "dependencies": {
+    "simpledb": "0.0.9",
+    "optimist": "~0.6.0",
+    "azure": "~0.7.11",
+    "async": "~0.2.9",
+    "sprintf-js": "0.0.7",
+    "util": "~0.4.9"
+  }
 }
